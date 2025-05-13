@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, forwardRef } from 'react';
 import styled from 'styled-components';
 import { motion, useAnimation, useInView } from 'framer-motion';
 import HeroPlaceholder from '@/components/HeroPlaceholder';
@@ -31,8 +31,9 @@ const Nav = styled.nav`
   box-shadow: none;
 
   &.scrolled {
-    background: rgba(255,255,255,0.97);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
   }
 `;
 
@@ -565,17 +566,31 @@ const companyTiles = [
   },
 ];
 
+// Create a forwardRef wrapper for the Hero section to properly handle the ref
+const HeroWithRef = forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>((props, ref) => (
+  <Hero ref={ref} {...props} />
+));
+
 // Main Component
 const LandingPage = () => {
   const [navScrolled, setNavScrolled] = useState(false);
   const ctaRef = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeFeature, setActiveFeature] = useState('data-collection');
+  
+  // Add a ref for the hero section
+  const heroRef = useRef<HTMLElement>(null);
 
+  // Update the useEffect hook to trigger later in the scroll
   useEffect(() => {
     const handleScroll = () => {
-      if (ctaRef.current) {
-        const ctaBottom = ctaRef.current.getBoundingClientRect().bottom;
-        setNavScrolled(ctaBottom <= 0);
+      if (heroRef.current) {
+        // Activate when we're about 70% through the hero section
+        const heroHeight = heroRef.current.offsetHeight;
+        const scrollPosition = window.scrollY;
+        const triggerPosition = heroHeight * 0.9; 
+        
+        setNavScrolled(scrollPosition > triggerPosition);
       }
     };
     window.addEventListener('scroll', handleScroll);
@@ -630,7 +645,7 @@ const LandingPage = () => {
         </MobileMenuOverlay>
       )}
       <Container>
-        <Hero>
+        <HeroWithRef ref={heroRef}>
           <HeroContent>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -653,7 +668,7 @@ const LandingPage = () => {
               </HeroButtons>
             </motion.div>
           </HeroContent>
-        </Hero>
+        </HeroWithRef>
 
         <LogoBarSection>
           <LogoBarLabel>Built for businesses that lead with knowledge</LogoBarLabel>
@@ -712,6 +727,142 @@ const LandingPage = () => {
           </FeatureGrid>
         </Features>
 
+        <OnboardingSection id="onboarding">
+          <Container>
+            <SectionTitle>Expert Onboarding & Management</SectionTitle>
+            <SectionSubtitle>Streamlined expert matching and onboarding for your business needs</SectionSubtitle>
+            
+            <OnboardingContent>
+              <OnboardingVisual>
+                {activeFeature === 'data-collection' && (
+                  <OnboardingImage>
+                    <OnboardingPlaceholder>
+                      <div className="settings-card">
+                        <h4>Settings</h4>
+                        <div className="item">
+                          <span>Risk level:</span>
+                          <span>Medium</span>
+                        </div>
+                        <div className="item">
+                          <span>Country:</span>
+                          <span>NL</span>
+                        </div>
+                        <div className="item">
+                          <span>Business type:</span>
+                          <span>SaaS</span>
+                        </div>
+                      </div>
+                      <div className="arrow">→</div>
+                      <div className="info-card">
+                        <h4>Information</h4>
+                        <div className="item">
+                          <span>UBO</span>
+                          <span className="check">✓</span>
+                        </div>
+                        <div className="item">
+                          <span>Bank account</span>
+                          <span className="check">✓</span>
+                        </div>
+                        <div className="item">
+                          <span>Ownership</span>
+                          <span className="check">✓</span>
+                        </div>
+                      </div>
+                    </OnboardingPlaceholder>
+                  </OnboardingImage>
+                )}
+                
+                {activeFeature === 'conversion' && (
+                  <OnboardingImage>
+                    <OnboardingPlaceholder>
+                      <div className="conversion-chart">
+                        <div className="bar-container">
+                          <div className="bar" style={{ height: '60%' }}></div>
+                          <div className="label">Before</div>
+                        </div>
+                        <div className="bar-container">
+                          <div className="bar highlight" style={{ height: '90%' }}></div>
+                          <div className="label">After</div>
+                        </div>
+                        <div className="metric">
+                          <div className="value">+56%</div>
+                          <div className="label">Conversion Rate</div>
+                        </div>
+                      </div>
+                    </OnboardingPlaceholder>
+                  </OnboardingImage>
+                )}
+                
+                {activeFeature === 'localization' && (
+                  <OnboardingImage>
+                    <OnboardingPlaceholder>
+                      <div className="globe">
+                        <div className="circle"></div>
+                        <div className="marker" style={{ top: '30%', left: '70%' }}>🇳🇱</div>
+                        <div className="marker" style={{ top: '40%', left: '35%' }}>🇺🇸</div>
+                        <div className="marker" style={{ top: '60%', left: '50%' }}>🇨🇳</div>
+                        <div className="marker" style={{ top: '50%', left: '80%' }}>🇯🇵</div>
+                        <div className="marker" style={{ top: '70%', left: '25%' }}>🇧🇷</div>
+                      </div>
+                      <div className="localization-metric">
+                        <div className="value">30+</div>
+                        <div className="label">Languages</div>
+                      </div>
+                    </OnboardingPlaceholder>
+                  </OnboardingImage>
+                )}
+              </OnboardingVisual>
+              
+              <OnboardingFeatures>
+                <OnboardingFeatureItem 
+                  isActive={activeFeature === 'data-collection'} 
+                  onClick={() => setActiveFeature('data-collection')}
+                >
+                  <OnboardingFeatureIcon>
+                    <span>1</span>
+                  </OnboardingFeatureIcon>
+                  <OnboardingFeatureContent>
+                    <OnboardingFeatureTitle>First-time-right data collection</OnboardingFeatureTitle>
+                    <OnboardingFeatureText>
+                      Adapt data collection in real-time based on risk scoring, compliance policies and business attributes.
+                    </OnboardingFeatureText>
+                  </OnboardingFeatureContent>
+                </OnboardingFeatureItem>
+                
+                <OnboardingFeatureItem 
+                  isActive={activeFeature === 'conversion'} 
+                  onClick={() => setActiveFeature('conversion')}
+                >
+                  <OnboardingFeatureIcon>
+                    <span>⚡</span>
+                  </OnboardingFeatureIcon>
+                  <OnboardingFeatureContent>
+                    <OnboardingFeatureTitle>Optimised for conversion</OnboardingFeatureTitle>
+                    <OnboardingFeatureText>
+                      Our platform is designed to maximize user completion rates and minimize drop-offs during the onboarding process.
+                    </OnboardingFeatureText>
+                  </OnboardingFeatureContent>
+                </OnboardingFeatureItem>
+                
+                <OnboardingFeatureItem 
+                  isActive={activeFeature === 'localization'} 
+                  onClick={() => setActiveFeature('localization')}
+                >
+                  <OnboardingFeatureIcon>
+                    <span>🌐</span>
+                  </OnboardingFeatureIcon>
+                  <OnboardingFeatureContent>
+                    <OnboardingFeatureTitle>Deep localization</OnboardingFeatureTitle>
+                    <OnboardingFeatureText>
+                      Support for multiple languages, regional compliance requirements, and culturally-appropriate interfaces.
+                    </OnboardingFeatureText>
+                  </OnboardingFeatureContent>
+                </OnboardingFeatureItem>
+              </OnboardingFeatures>
+            </OnboardingContent>
+          </Container>
+        </OnboardingSection>
+
         <Testimonials>
           <SectionTitle>Trusted by leading companies</SectionTitle>
           <TestimonialGrid>
@@ -735,28 +886,6 @@ const LandingPage = () => {
             </TestimonialCard>
           </TestimonialGrid>
         </Testimonials>
-
-        <CompanyTilesSection>
-          <TilesTitle>Trusted by leading companies</TilesTitle>
-          <TilesSubtitle>Run your business onboarding like the world's best companies — without needing a 100+ people team.</TilesSubtitle>
-          <TilesGrid>
-            {companyTiles.map((tile, i) => (
-              <Tile key={i} style={tile.bg ? { backgroundImage: `url(${tile.bg})` } : {}}>
-                {tile.logo && <TileLogo src={tile.logo} alt="Company logo" />}
-                {tile.quote && <TileQuote>{tile.quote}</TileQuote>}
-                {tile.person && (
-                  <TilePerson>
-                    <TileAvatar src={tile.person.avatar} alt={tile.person.name} />
-                    <TilePersonInfo>
-                      <TileName>{tile.person.name}</TileName>
-                      <TileTitle>{tile.person.title}</TileTitle>
-                    </TilePersonInfo>
-                  </TilePerson>
-                )}
-              </Tile>
-            ))}
-          </TilesGrid>
-        </CompanyTilesSection>
 
         <CTA ref={ctaRef}>
           <CTAContent>
@@ -946,82 +1075,6 @@ const CTAButtons = styled.div`
   justify-content: center;
 `;
 
-// Add CompanyTilesSection styled components
-const CompanyTilesSection = styled.section`
-  padding: 80px 0 40px 0;
-  background: #fff;
-`;
-const TilesTitle = styled.h2`
-  font-size: 36px;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 16px;
-`;
-const TilesSubtitle = styled.p`
-  text-align: center;
-  color: #666;
-  font-size: 18px;
-  margin-bottom: 40px;
-`;
-const TilesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 32px;
-  max-width: 1200px;
-  margin: 0 auto;
-`;
-const Tile = styled.div`
-  background: #f6f6f6;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  padding: 32px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-height: 220px;
-  position: relative;
-  overflow: hidden;
-  background-size: cover;
-  background-position: center;
-`;
-const TileLogo = styled.img`
-  height: 32px;
-  margin-bottom: 16px;
-  background: #fff;
-  border-radius: 8px;
-  object-fit: contain;
-`;
-const TileQuote = styled.p`
-  font-size: 17px;
-  color: #222;
-  margin-bottom: 16px;
-`;
-const TilePerson = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-const TileAvatar = styled.img`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #eee;
-`;
-const TilePersonInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-const TileName = styled.div`
-  font-weight: 600;
-  color: #222;
-  font-size: 15px;
-`;
-const TileTitle = styled.div`
-  color: #888;
-  font-size: 13px;
-`;
-
 // Add LogoBarSection styled components
 const LogoBarSection = styled.section`
   padding: 48px 0 32px 0;
@@ -1077,6 +1130,318 @@ const LogoBarLogo = styled.img`
     opacity: 0.8;
   }
   margin: 0 20px;
+`;
+
+// Add OnboardingSection styled components
+const OnboardingSection = styled.section`
+  padding: 120px 0;
+  background: transparent;
+`;
+
+const SectionSubtitle = styled.p`
+  font-size: 20px;
+  color: #4A4A4A;
+  margin-bottom: 64px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+`;
+
+const OnboardingContent = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  margin-top: 60px;
+  text-align: left;
+  
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const OnboardingVisual = styled.div`
+  background: #F8F9F7;
+  border-radius: 16px;
+  height: 500px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  @media (max-width: 992px) {
+    height: 400px;
+    margin-bottom: 40px;
+  }
+`;
+
+const OnboardingImage = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F8F9FA;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+`;
+
+const OnboardingCard = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  padding: 32px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+`;
+
+const CardHeader = styled.h3`
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #1A1A1A;
+`;
+
+const CardItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const CardLabel = styled.div`
+  font-size: 18px;
+  font-weight: 600;
+  color: #1A1A1A;
+`;
+
+const CardValue = styled.div`
+  font-size: 18px;
+  font-weight: 500;
+  color: #4A4A4A;
+`;
+
+const CardCheck = styled.div`
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #00CE93;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const OnboardingFeatures = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+interface OnboardingFeatureItemProps {
+  isActive: boolean;
+}
+
+const OnboardingFeatureItem = styled.div<OnboardingFeatureItemProps>`
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: ${props => props.isActive ? '#F0FBF8' : 'white'};
+  border: 1px solid ${props => props.isActive ? '#00CE93' : '#E5E5E5'};
+  margin-bottom: 16px;
+  
+  &:hover {
+    border-color: #00CE93;
+  }
+`;
+
+const OnboardingFeatureIcon = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #E5E5E5;
+  flex-shrink: 0;
+  
+  span {
+    color: #00CE93;
+    font-weight: 600;
+  }
+`;
+
+const OnboardingFeatureContent = styled.div`
+  flex: 1;
+`;
+
+const OnboardingFeatureTitle = styled.div`
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 8px;
+`;
+
+const OnboardingFeatureText = styled.div`
+  color: #666;
+  font-size: 15px;
+  line-height: 1.5;
+`;
+
+// Add the OnboardingPlaceholder styled component
+const OnboardingPlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  
+  .settings-card, .info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    width: 240px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    
+    h4 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #333;
+    }
+    
+    .item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .check {
+        width: 20px;
+        height: 20px;
+        background: #00CE93;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+    }
+  }
+  
+  .arrow {
+    margin: 0 24px;
+    font-size: 24px;
+    color: #00CE93;
+  }
+  
+  .conversion-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 32px;
+    height: 300px;
+    
+    .bar-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 80px;
+      
+      .bar {
+        width: 100%;
+        background: #ddd;
+        border-radius: 8px 8px 0 0;
+        transition: height 0.5s ease;
+        
+        &.highlight {
+          background: #00CE93;
+        }
+      }
+      
+      .label {
+        margin-top: 12px;
+        font-size: 16px;
+        color: #666;
+      }
+    }
+    
+    .metric {
+      margin-left: 24px;
+      
+      .value {
+        font-size: 36px;
+        font-weight: 700;
+        color: #00CE93;
+      }
+      
+      .label {
+        font-size: 16px;
+        color: #666;
+      }
+    }
+  }
+  
+  .globe {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    
+    .circle {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid #ddd;
+      background: #f8f9fa;
+    }
+    
+    .marker {
+      position: absolute;
+      font-size: 24px;
+      transform: translate(-50%, -50%);
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+    }
+  }
+  
+  .localization-metric {
+    position: absolute;
+    bottom: 60px;
+    right: 80px;
+    text-align: center;
+    background: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    
+    .value {
+      font-size: 36px;
+      font-weight: 700;
+      color: #00CE93;
+    }
+    
+    .label {
+      font-size: 16px;
+      color: #666;
+    }
+  }
 `;
 
 export default LandingPage; 
