@@ -4,7 +4,7 @@ Proflr is the new standard in expert matching—AI-powered, diversity-promoting,
 
 ## 🚀 Features
 - Animated logo carousel with gradient fades
-- Modern, responsive landing page inspired by Duna.com
+- Modern, responsive landing page 
 - AI-powered matching and team management
 - Metrics, testimonials, and company tiles
 - Clean, scalable, and easy to customize
